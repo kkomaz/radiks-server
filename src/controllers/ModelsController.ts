@@ -44,11 +44,21 @@ const makeModelsController = (
   });
 
   ModelsController.getAsync('/find', async (req, res) => {
+    let cursor;
     const mongo = queryToMongo(req.query, {
       maxLimit: config.maxLimit,
     });
 
-    const cursor = radiksCollection.find(mongo.criteria, mongo.options);
+    if (req.query.$or) {
+      cursor = radiksCollection.find(
+        {
+          $or: req.query.$or,
+        },
+        mongo.options
+      );
+    } else {
+      cursor = radiksCollection.find(mongo.criteria, mongo.options);
+    }
     const results = await cursor.toArray();
     const total = await cursor.count();
 
